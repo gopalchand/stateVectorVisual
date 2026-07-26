@@ -1,0 +1,17 @@
+{
+		"version": "1.0.0.7",
+		"author": {"name":"Gopal Chand","email":"chand3000@hotmail.com"},
+		"resources": [
+			{
+				"resourceId": "rId0",
+				"sourceType": 5,
+				"file": "resources/stateVectorVisual5F96D26098794695B26A1C6FADFD28F8.pbiviz.json"
+			}
+		],
+		"visual": {"name":"StateVectorVisual","displayName":"State Vector Visual","guid":"stateVectorVisual5F96D26098794695B26A1C6FADFD28F8","visualClassName":"Visual","version":"1.0.0.7","description":"Generic state vector visual for time series KPI analysis","supportUrl":"https://github.com/gopalchand/StateVectorVisual/issues","gitHubUrl":""},
+		"metadata": {
+			"pbivizjson": {
+				"resourceId": "rId0"
+			}
+		}
+	}
