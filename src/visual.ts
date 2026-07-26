@@ -521,6 +521,12 @@ export class Visual implements IVisual {
             Math.max(120, height - 88)
         );
 
+        /* Debugging
+        root.style.border = "2px solid red";
+        cards.style.border = "2px solid green";
+        (chart as unknown as HTMLElement).style.border = "2px solid blue";
+        */
+
         root.appendChild(chart);
 
         this.target.appendChild(root);
@@ -542,6 +548,7 @@ export class Visual implements IVisual {
         this.appendMetric(cards, "Error", stateVector.directionalError, "");
 
         const classification = document.createElement("div");
+        classification.title = this.getMetricTooltip("Classification") + "\nCurrent Value: " + stateVector.classification;
 
         classification.textContent = stateVector.classification;
         classification.style.fontSize = "13px";
@@ -565,6 +572,10 @@ export class Visual implements IVisual {
         suffix: string
     ): void {
         const wrapper = document.createElement("div");
+
+        wrapper.title =
+            `${this.getMetricTooltip(label)}
+        Current Value: ${value.toFixed(2)}`;
 
         wrapper.style.display = "flex";
         wrapper.style.flexDirection = "column";
@@ -791,7 +802,7 @@ export class Visual implements IVisual {
 
         endLabel.setAttribute(
             "x",
-            String(width - paddingRight - 45)
+            String(width - paddingRight - 55)
         );
 
         endLabel.setAttribute(
@@ -1080,4 +1091,36 @@ export class Visual implements IVisual {
             ?? this.theme.sigma2;
     }
 
+    private getMetricTooltip(
+    metricName: string
+): string {
+
+    switch (metricName) {
+
+            case "State":
+                return "Current value of the KPI at the most recent timestamp.";
+
+            case "Baseline":
+                return "Expected value based on the Baseline Window average.";
+
+            case "Momentum":
+                return "Trend indicator.\n\n" +
+                    "(ShortBaseline - Baseline) / Baseline\n\n" +
+                    "Displayed in basis points (bp).";
+
+            case "Variability":
+                return "Rolling standard deviation of values within the Baseline Window.";
+
+            case "Error":
+                return "Normalised deviation from the reference.\n\n" +
+                    "(State - Reference) / Variability\n\n" +
+                    "Equivalent to a z-score style measure.";
+
+            case "Classification":
+                return "Qualitative state derived from the Error value.";
+
+            default:
+                return metricName;
+        }
+    }
 }
