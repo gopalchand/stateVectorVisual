@@ -4,7 +4,7 @@
         "displayName": "State Vector Visual",
         "guid": "stateVectorVisual5F96D26098794695B26A1C6FADFD28F8",
         "visualClassName": "Visual",
-        "version": "0.9.9.1",
+        "version": "0.9.9.2",
         "description": "Generic state vector visual for time series KPI analysis",
         "supportUrl": "https://github.com/gopalchand/StateVectorVisual/issues",
         "gitHubUrl": ""

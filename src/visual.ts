@@ -537,7 +537,7 @@ export class Visual implements IVisual {
 
         this.appendMetric(cards, "State", stateVector.state, "");
         this.appendMetric(cards, "Baseline", stateVector.baseline, "");
-        this.appendMetric(cards, "Momentum_bp", stateVector.directionalMomentum*10000, ""); /* Scale to basis points for better interpretability */
+        this.appendMetric(cards, "Momentum", stateVector.directionalMomentum*10000, ""); /* Scale to basis points for better interpretability */
         this.appendMetric(cards, "Variability", stateVector.variability, "");
         this.appendMetric(cards, "Error", stateVector.directionalError, "");
 
@@ -644,7 +644,11 @@ export class Visual implements IVisual {
             paddingLeft,
             paddingRight,
             paddingTop,
-            paddingBottom
+            paddingBottom,
+            renderSeries.stateSeries[0].time,
+            renderSeries.stateSeries[
+                renderSeries.stateSeries.length - 1
+            ].time
         );
 
         this.drawLine(
@@ -735,12 +739,86 @@ export class Visual implements IVisual {
         paddingLeft: number,
         paddingRight: number,
         paddingTop: number,
-        paddingBottom: number
+        paddingBottom: number,
+        firstDate: Date,
+        lastDate: Date
     ): void {
         const xAxis = document.createElementNS(
             "http://www.w3.org/2000/svg",
             "line"
         );
+
+        const startLabel = document.createElementNS(
+            "http://www.w3.org/2000/svg",
+            "text"
+        );
+
+        startLabel.setAttribute(
+            "x",
+            String(paddingLeft)
+        );
+
+        startLabel.setAttribute(
+            "y",
+            String(height - paddingBottom + 18)
+        );
+
+        startLabel.setAttribute(
+            "fill",
+            this.theme.foreground
+        );
+
+        startLabel.setAttribute(
+            "font-size",
+            "10"
+        );
+
+        startLabel.textContent =
+            firstDate.toLocaleDateString(
+                undefined,
+                {
+                    day: "2-digit",
+                    month: "short"
+                }
+            );
+
+        svg.appendChild(startLabel);
+
+        const endLabel = document.createElementNS(
+            "http://www.w3.org/2000/svg",
+            "text"
+        );
+
+        endLabel.setAttribute(
+            "x",
+            String(width - paddingRight - 45)
+        );
+
+        endLabel.setAttribute(
+            "y",
+            String(height - paddingBottom + 18)
+        );
+
+        endLabel.setAttribute(
+            "fill",
+            this.theme.foreground
+        );
+
+        endLabel.setAttribute(
+            "font-size",
+            "10"
+        );
+
+        endLabel.textContent =
+            lastDate.toLocaleDateString(
+                undefined,
+                {
+                    day: "2-digit",
+                    month: "short"
+                }
+            );
+
+        svg.appendChild(endLabel);
 
         xAxis.setAttribute("x1", String(paddingLeft));
         xAxis.setAttribute("y1", String(height - paddingBottom));
