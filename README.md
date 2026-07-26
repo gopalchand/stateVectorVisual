@@ -251,7 +251,7 @@ Select the generated `.pbiviz` file.
 Example:
 
 ```text
- stateVectorVisual5F96D88098794695B26A1C6FADFD28F8.0.9.7.5.pbiviz
+stateVectorVisual5F96D26098794695B26A1C6FADFD28F8.0.9.7.5.pbiviz
 ```
 
 Select:
