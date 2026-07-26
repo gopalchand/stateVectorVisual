@@ -652,7 +652,7 @@ export class Visual implements IVisual {
             renderSeries.upperTwoSigmaSeries,
             xScale,
             yScale,
-            this.theme.sigma2,
+            this.getSigma2Colour(),
             1,
             "3 3"
         );
@@ -662,7 +662,7 @@ export class Visual implements IVisual {
             renderSeries.lowerTwoSigmaSeries,
             xScale,
             yScale,
-            this.theme.sigma2,
+            this.getSigma2Colour(),
             1,
             "3 3"
         );
@@ -672,7 +672,7 @@ export class Visual implements IVisual {
             renderSeries.upperOneSigmaSeries,
             xScale,
             yScale,
-            this.theme.sigma1,
+            this.getSigma1Colour(),
             1,
             "3 3"
         );
@@ -682,7 +682,7 @@ export class Visual implements IVisual {
             renderSeries.lowerOneSigmaSeries,
             xScale,
             yScale,
-            this.theme.sigma1,
+            this.getSigma1Colour(),
             1,
             "3 3"
         );
@@ -692,7 +692,7 @@ export class Visual implements IVisual {
             renderSeries.baselineSeries,
             xScale,
             yScale,
-            this.theme.baseline,
+            this.getBaselineColour(),
             2,
             "4 3"
         );
@@ -702,7 +702,7 @@ export class Visual implements IVisual {
             renderSeries.stateSeries,
             xScale,
             yScale,
-            this.theme.state,
+            this.getStateColour(),
             2,
             ""
         );
@@ -821,7 +821,7 @@ export class Visual implements IVisual {
         circle.setAttribute("cx", String(xScale(latest.time)));
         circle.setAttribute("cy", String(yScale(latest.value)));
         circle.setAttribute("r", "4");
-        circle.setAttribute("fill", this.theme.state);
+        circle.setAttribute("fill", this.getStateColour());
 
         svg.appendChild(circle);
     }
@@ -865,10 +865,10 @@ export class Visual implements IVisual {
         svg: SVGSVGElement,
         width: number
     ): void {
-        this.drawLegendItem(svg, width - 220, 12, this.theme.state, "State");
-        this.drawLegendItem(svg, width - 165, 12, this.theme.baseline, "Baseline");
-        this.drawLegendItem(svg, width - 92, 12, this.theme.sigma1, "±1σ");
-        this.drawLegendItem(svg, width - 52, 12, this.theme.sigma2, "±2σ");
+        this.drawLegendItem(svg, width - 220, 12, this.getStateColour(), "State");
+        this.drawLegendItem(svg, width - 165, 12, this.getBaselineColour(), "Baseline");
+        this.drawLegendItem(svg, width - 92, 12, this.getSigma1Colour(), "±1σ");
+        this.drawLegendItem(svg, width - 52, 12, this.getSigma2Colour(), "±2σ");
     }
 
     private drawLegendItem(
@@ -937,7 +937,7 @@ export class Visual implements IVisual {
      * This method is called once every time we open properties pane or when the user edit any format property.
      */
     public getFormattingModel(): powerbi.visuals.FormattingModel {
-        return this.formattingSettingsService.buildFormattingModel(this.formattingSettings);
+        return this.formattingSettingsService.buildFormattingModel(this.settings);
     }
 
     private getShortWindow(): number {
@@ -980,6 +980,26 @@ export class Visual implements IVisual {
 
         return this.settings?.behaviourSettings?.targetValue?.value
             ?? this.targetValue;
+    }
+
+    private getStateColour(): string {
+        return this.settings?.colours?.stateColour?.value?.value
+            ?? this.theme.state;
+    }
+
+    private getBaselineColour(): string {
+        return this.settings?.colours?.baselineColour?.value?.value
+            ?? this.theme.baseline;
+    }
+
+    private getSigma1Colour(): string {
+        return this.settings?.colours?.sigma1Colour?.value?.value
+            ?? this.theme.sigma1;
+    }
+
+    private getSigma2Colour(): string {
+        return this.settings?.colours?.sigma2Colour?.value?.value
+            ?? this.theme.sigma2;
     }
 
 }
