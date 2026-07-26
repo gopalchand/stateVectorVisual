@@ -57,12 +57,10 @@ Momentum
 Momentum = (ShortBaseline - Baseline) / Baseline
 ```
 
-Displayed as:
+Displayed as basis points:
 
 ```text
-Momentum (bp)
-=
-Momentum × 10,000
+Momentum (bp) = Momentum × 10,000
 ```
 
 Variability
