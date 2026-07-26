@@ -78,6 +78,7 @@ export class Visual implements IVisual {
 
     private formattingSettings: VisualFormattingSettingsModel;
     private formattingSettingsService: FormattingSettingsService;
+    private settings: VisualFormattingSettingsModel;
 
     private host: IVisualHost;
     private theme: ThemeColours;
@@ -116,8 +117,8 @@ export class Visual implements IVisual {
 }
 
     constructor(options: VisualConstructorOptions) {
-        this.formattingSettingsService = new FormattingSettingsService();
         this.host = options.host;
+        this.formattingSettingsService = new FormattingSettingsService();
         this.theme = this.loadThemeColours();
         this.target = options.element;
     }
@@ -129,7 +130,7 @@ export class Visual implements IVisual {
 
         this.theme = this.loadThemeColours();
 
-        this.formattingSettings = this.formattingSettingsService.populateFormattingSettingsModel(VisualFormattingSettingsModel, options.dataViews[0]);
+        this.settings = this.formattingSettingsService.populateFormattingSettingsModel(VisualFormattingSettingsModel, options.dataViews[0]);
 
         if (!dataView?.categorical) {
             this.renderMessage("Add Timestamp and Value fields.");
@@ -220,19 +221,19 @@ export class Visual implements IVisual {
         const shortBaseline = this.trailingAverage(
             points,
             lastIndex,
-            this.shortWindow
+            this.getShortWindow()
         );
 
         const baseline = this.trailingAverage(
             points,
             lastIndex,
-            this.baselineWindow
+            this.getBaselineWindow()
         );
 
         const variability = this.trailingStandardDeviation(
             points,
             lastIndex,
-            this.baselineWindow
+            this.getBaselineWindow()
         );
 
         const reference = this.calculateReference(baseline);
@@ -243,7 +244,7 @@ export class Visual implements IVisual {
                 baseline
             );
 
-        const directionalSign = this.higherIsBetter ? 1 : -1;
+        const directionalSign = this.getHigherIsBetter() ? 1 : -1;
 
         const directionalMomentum = rawMomentum * directionalSign;
 
@@ -272,8 +273,8 @@ export class Visual implements IVisual {
     }
 
     private calculateReference(baseline: number): number {
-        if (this.useTarget && this.targetValue !== undefined) {
-            return this.targetValue;
+        if (this.getUseTarget() && this.getTargetValue() !== undefined) {
+            return this.getTargetValue();
         }
 
         return baseline;
@@ -291,13 +292,13 @@ export class Visual implements IVisual {
             const baseline = this.trailingAverage(
                 points,
                 i,
-                this.baselineWindow
+                this.getBaselineWindow()
             );
 
             const variability = this.trailingStandardDeviation(
                 points,
                 i,
-                this.baselineWindow
+                this.getBaselineWindow()
             );
 
             const reference = this.calculateReference(baseline);
@@ -409,7 +410,7 @@ export class Visual implements IVisual {
         // Observation mode
         // Uses last N observations
         //
-        if (!this.useWindowTypeDays) {
+        if (!this.getUseWindowTypeDays()) {
 
             const startIndex =
                 Math.max(0, index - windowSize + 1);
@@ -503,7 +504,7 @@ export class Visual implements IVisual {
 
         const title = document.createElement("div");
 
-        title.textContent = "State Vector Visual 0.97.5";
+        title.textContent = "State Vector Visual";
         title.style.fontSize = "13px";
         title.style.fontWeight = "600";
         title.style.marginBottom = "6px";
@@ -938,4 +939,47 @@ export class Visual implements IVisual {
     public getFormattingModel(): powerbi.visuals.FormattingModel {
         return this.formattingSettingsService.buildFormattingModel(this.formattingSettings);
     }
+
+    private getShortWindow(): number {
+
+        return this.settings?.windowSettings?.shortWindow?.value
+            ?? this.shortWindow;
+    }
+
+    private getBaselineWindow(): number {
+
+        return this.settings?.windowSettings?.baselineWindow?.value
+            ?? this.baselineWindow;
+    }
+
+    private getLongWindow(): number {
+
+        return this.settings?.windowSettings?.longWindow?.value
+            ?? this.longWindow;
+    }
+
+    private getUseWindowTypeDays(): boolean {
+
+        return this.settings?.windowSettings?.useWindowTypeDays?.value
+            ?? this.useWindowTypeDays;
+    }
+
+    private getHigherIsBetter(): boolean {
+
+    return this.settings?.behaviourSettings?.higherIsBetter?.value
+        ?? this.higherIsBetter;
+    }
+
+    private getUseTarget(): boolean {
+
+        return this.settings?.behaviourSettings?.useTarget?.value
+            ?? this.useTarget;
+    }
+
+    private getTargetValue(): number | undefined {
+
+        return this.settings?.behaviourSettings?.targetValue?.value
+            ?? this.targetValue;
+    }
+
 }

@@ -32,52 +32,140 @@ import FormattingSettingsCard = formattingSettings.SimpleCard;
 import FormattingSettingsSlice = formattingSettings.Slice;
 import FormattingSettingsModel = formattingSettings.Model;
 
-/**
- * Data Point Formatting Card
+/*
+ * Window Settings
  */
-class DataPointCardSettings extends FormattingSettingsCard {
-    defaultColor = new formattingSettings.ColorPicker({
-        name: "defaultColor",
-        displayName: "Default color",
-        value: { value: "" }
-    });
 
-    showAllDataPoints = new formattingSettings.ToggleSwitch({
-        name: "showAllDataPoints",
-        displayName: "Show all",
+class WindowSettingsCard extends FormattingSettingsCard {
+
+    useWindowTypeDays = new formattingSettings.ToggleSwitch({
+        name: "useWindowTypeDays",
+        displayName: "Use Calendar Days",
         value: true
     });
 
-    fill = new formattingSettings.ColorPicker({
-        name: "fill",
-        displayName: "Fill",
-        value: { value: "" }
+    shortWindow = new formattingSettings.NumUpDown({
+        name: "shortWindow",
+        displayName: "Short Window",
+        value: 7
     });
 
-    fillRule = new formattingSettings.ColorPicker({
-        name: "fillRule",
-        displayName: "Color saturation",
-        value: { value: "" }
+    baselineWindow = new formattingSettings.NumUpDown({
+        name: "baselineWindow",
+        displayName: "Baseline Window",
+        value: 30
     });
 
-    fontSize = new formattingSettings.NumUpDown({
-        name: "fontSize",
-        displayName: "Text Size",
-        value: 12
+    longWindow = new formattingSettings.NumUpDown({
+        name: "longWindow",
+        displayName: "Long Window",
+        value: 60
     });
 
-    name: string = "dataPoint";
-    displayName: string = "Data colors";
-    slices: Array<FormattingSettingsSlice> = [this.defaultColor, this.showAllDataPoints, this.fill, this.fillRule, this.fontSize];
+    name = "windowSettings";
+
+    displayName = "Window Settings";
+
+    slices: Array<FormattingSettingsSlice> = [
+        this.useWindowTypeDays,
+        this.shortWindow,
+        this.baselineWindow,
+        this.longWindow
+    ];
 }
 
-/**
-* visual settings model class
-*
-*/
-export class VisualFormattingSettingsModel extends FormattingSettingsModel {
-    // Create formatting settings model formatting cards
-    dataPointCard = new DataPointCardSettings();
+/*
+ * Behaviour Settings
+ */
 
-    cards = [this.dataPointCard];
+class BehaviourSettingsCard extends FormattingSettingsCard {
+
+    higherIsBetter = new formattingSettings.ToggleSwitch({
+        name: "higherIsBetter",
+        displayName: "Higher Is Better",
+        value: true
+    });
+
+    useTarget = new formattingSettings.ToggleSwitch({
+        name: "useTarget",
+        displayName: "Use Target",
+        value: false
+    });
+
+    targetValue = new formattingSettings.NumUpDown({
+        name: "targetValue",
+        displayName: "Target Value",
+        value: 0
+    });
+
+    name = "behaviourSettings";
+
+    displayName = "Behaviour";
+
+    slices: Array<FormattingSettingsSlice> = [
+        this.higherIsBetter,
+        this.useTarget,
+        this.targetValue
+    ];
+}
+
+/*
+ * Colour Settings
+ */
+
+class ColourSettingsCard extends FormattingSettingsCard {
+
+    stateColour = new formattingSettings.ColorPicker({
+        name: "stateColour",
+        displayName: "State",
+        value: { value: "#118DFF" }
+    });
+
+    baselineColour = new formattingSettings.ColorPicker({
+        name: "baselineColour",
+        displayName: "Baseline",
+        value: { value: "#777777" }
+    });
+
+    sigma1Colour = new formattingSettings.ColorPicker({
+        name: "sigma1Colour",
+        displayName: "±1σ",
+        value: { value: "#D6B85A" }
+    });
+
+    sigma2Colour = new formattingSettings.ColorPicker({
+        name: "sigma2Colour",
+        displayName: "±2σ",
+        value: { value: "#DD9999" }
+    });
+
+    name = "colours";
+
+    displayName = "Colours";
+
+    slices: Array<FormattingSettingsSlice> = [
+        this.stateColour,
+        this.baselineColour,
+        this.sigma1Colour,
+        this.sigma2Colour
+    ];
+}
+
+/*
+ * Visual Formatting Model
+ */
+
+export class VisualFormattingSettingsModel extends FormattingSettingsModel {
+
+    windowSettings = new WindowSettingsCard();
+
+    behaviourSettings = new BehaviourSettingsCard();
+
+    colours = new ColourSettingsCard();
+
+    cards = [
+        this.windowSettings,
+        this.behaviourSettings,
+        this.colours
+    ];
 }

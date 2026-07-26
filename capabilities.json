@@ -42,5 +42,83 @@
     }
 }
 ],
-"objects": {}
+    "objects": {
+    "windowSettings": {
+        "displayName": "Window Settings",
+        "properties": {
+        "useWindowTypeDays": {
+            "type": { "bool": true }
+        },
+        "shortWindow": {
+            "type": { "numeric": true }
+        },
+        "baselineWindow": {
+            "type": { "numeric": true }
+        },
+        "longWindow": {
+            "type": { "numeric": true }
+        }
+        }
+    },
+
+    "behaviourSettings": {
+        "displayName": "Behaviour",
+        "properties": {
+        "higherIsBetter": {
+            "type": { "bool": true }
+        },
+        "useTarget": {
+            "type": { "bool": true }
+        },
+        "targetValue": {
+            "type": { "numeric": true }
+        }
+        }
+    },
+
+    "colours": {
+        "displayName": "Colours",
+        "properties": {
+        "stateColour": {
+            "type": {
+            "fill": {
+                "solid": {
+                "color": true
+                }
+            }
+            }
+        },
+
+        "baselineColour": {
+            "type": {
+            "fill": {
+                "solid": {
+                "color": true
+                }
+            }
+            }
+        },
+
+        "sigma1Colour": {
+            "type": {
+            "fill": {
+                "solid": {
+                "color": true
+                }
+            }
+            }
+        },
+
+        "sigma2Colour": {
+            "type": {
+            "fill": {
+                "solid": {
+                "color": true
+                }
+            }
+            }
+        }
+        }
+    }
+    }
 }
