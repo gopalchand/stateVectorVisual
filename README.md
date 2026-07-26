@@ -190,6 +190,192 @@ Output:
 dist
 ```
 
+## Installing the Visual in Power BI Desktop
+
+After successfully packaging the visual, a `.pbiviz` file will be created in the `dist` folder.
+
+### Step 1 - Build the Visual
+
+Validate the TypeScript project:
+
+```cmd
+npx tsc --noEmit
+```
+
+Package the visual:
+
+```cmd
+pbiviz package
+```
+
+A package file will be created in:
+
+```text
+dist
+```
+
+---
+
+### Step 2 - Open Power BI Desktop
+
+Start Power BI Desktop and open either:
+
+- An existing report
+- A new blank report
+
+---
+
+### Step 3 - Import the Custom Visual
+
+In the Visualizations pane:
+
+1. Select the ellipsis (`...`)
+2. Choose:
+
+```text
+Import a visual from a file
+```
+
+---
+
+### Step 4 - Select the PBIVIZ File
+
+Browse to:
+
+```text
+dist
+```
+
+Select the generated `.pbiviz` file.
+
+Example:
+
+```text
+ stateVectorVisual5F96D88098794695B26A1C6FADFD28F8.0.9.7.5.pbiviz
+```
+
+Select:
+
+```text
+Open
+```
+
+---
+
+### Step 5 - Accept the Security Prompt
+
+Power BI will display a custom visual import warning.
+
+Select:
+
+```text
+Import
+```
+
+---
+
+### Step 6 - Verify the Visual Appears
+
+A new icon should appear in the Visualizations pane.
+
+This is the State Vector Visual.
+
+---
+
+### Step 7 - Add the Visual to the Report
+
+Select the State Vector Visual icon.
+
+An empty visual placeholder will appear on the report canvas.
+
+---
+
+### Step 8 - Assign Data Fields
+
+Drag the required fields into the visual:
+
+```text
+Timestamp → Timestamp
+Value     → Value
+```
+
+The field names correspond to the roles defined in:
+
+```json
+capabilities.json
+```
+
+```json
+timestamp
+value
+```
+
+---
+
+### Step 9 - Verify Calculations
+
+The visual should display:
+
+```text
+State
+Baseline
+Momentum_bp
+Variability
+Error
+Classification
+```
+
+along with the state chart.
+
+If the visual is empty:
+
+- Verify the Timestamp field contains valid dates
+- Verify the Value field is numeric
+- Verify sufficient data exists for the configured baseline window
+
+---
+
+### Step 10 - Updating the Visual
+
+After making code changes:
+
+```cmd
+npx tsc --noEmit
+pbiviz package
+```
+
+Generate a new package and repeat:
+
+```text
+Import a visual from a file
+```
+
+Power BI will replace the previous version with the newer build.
+
+---
+
+### Verifying You Imported the Correct Build
+
+A simple technique is to temporarily change the visual title in `visual.ts`:
+
+```ts
+title.textContent = "State Vector Visual v0.98 TEST";
+```
+
+Rebuild:
+
+```cmd
+pbiviz package
+```
+
+Re-import the visual.
+
+If the title changes, the new package has been loaded successfully.
+
+If the title does not change, Power BI is still using an older package.
+
+
+
 ## Troubleshooting
 
 Install Power BI Visual Tools:
