@@ -42,6 +42,7 @@ interface RenderSeries {
     lowerOneSigmaSeries: SeriesPoint[];
     upperTwoSigmaSeries: SeriesPoint[];
     lowerTwoSigmaSeries: SeriesPoint[];
+    classificationSeries: ClassificationPoint[];
 }
 
 interface ThemeColours {
@@ -60,6 +61,11 @@ interface ThemeColours {
     neutral: string;
     negative: string;
     largeNegative: string;
+}
+
+interface ClassificationPoint {
+    time: Date;
+    classification: string;
 }
 
 export class Visual implements IVisual {
@@ -133,7 +139,7 @@ export class Visual implements IVisual {
         this.settings = this.formattingSettingsService.populateFormattingSettingsModel(VisualFormattingSettingsModel, options.dataViews[0]);
 
         if (!dataView?.categorical) {
-            this.renderMessage("Add Timestamp and Value fields.");
+            this.renderMessage("Add Timestamp/Observation and Value fields.");
             return;
         }
 
@@ -287,8 +293,12 @@ export class Visual implements IVisual {
         const lowerOneSigmaSeries: SeriesPoint[] = [];
         const upperTwoSigmaSeries: SeriesPoint[] = [];
         const lowerTwoSigmaSeries: SeriesPoint[] = [];
+        const classificationSeries: ClassificationPoint[] = [];
 
         for (let i = 0; i < points.length; i++) {
+
+            const state = points[i].value;
+
             const baseline = this.trailingAverage(
                 points,
                 i,
@@ -332,6 +342,31 @@ export class Visual implements IVisual {
                 time: points[i].time,
                 value: reference - (2 * variability)
             });
+
+            const shortBaseline = this.trailingAverage(
+                points,
+                i,
+                this.getShortWindow()
+            );
+
+            const directionalSign =
+                this.getHigherIsBetter() ? 1 : -1;
+
+            const rawError = this.safeDivide(
+                state - reference,
+                variability
+            );
+
+            const directionalError =
+                rawError * directionalSign;
+
+            const classification =
+                this.classify(directionalError);
+
+            classificationSeries.push({
+                time: points[i].time,
+                classification
+            });
         }
 
         return {
@@ -340,7 +375,8 @@ export class Visual implements IVisual {
             upperOneSigmaSeries,
             lowerOneSigmaSeries,
             upperTwoSigmaSeries,
-            lowerTwoSigmaSeries
+            lowerTwoSigmaSeries,
+            classificationSeries
         };
     }
 
@@ -542,8 +578,19 @@ export class Visual implements IVisual {
         cards.style.alignItems = "baseline";
 
         this.appendMetric(cards, "State", stateVector.state, "");
-        this.appendMetric(cards, "Baseline", stateVector.baseline, "");
-        this.appendMetric(cards, "Momentum", stateVector.directionalMomentum*10000, ""); /* Scale to basis points for better interpretability */
+        /* this.appendMetric(cards, "Baseline", stateVector.baseline, ""); */
+
+        /* Use the reference value as the baseline if a target is being used, otherwise use the baseline value */
+        this.appendMetric(
+            cards,
+            this.getUseTarget() ? "Reference" : "Baseline",
+            this.getUseTarget()
+                ? stateVector.reference
+                : stateVector.baseline,
+            ""
+        );
+
+        this.appendMetric(cards, "Momentum (bp)", stateVector.directionalMomentum*10000, ""); /* Scale to basis points for better interpretability */
         this.appendMetric(cards, "Variability", stateVector.variability, "");
         this.appendMetric(cards, "Error", stateVector.directionalError, "");
 
@@ -552,13 +599,14 @@ export class Visual implements IVisual {
 
         classification.textContent = stateVector.classification;
         classification.style.fontSize = "13px";
-        classification.style.fontWeight = "700";
-        classification.style.padding = "4px 8px";
+        classification.style.fontWeight = "800";
+        classification.style.padding = "5px 10px";
         classification.style.borderRadius = "4px";
         classification.style.backgroundColor = this.classificationColour(
             stateVector.classification
         );
-        classification.style.color = this.theme.foreground;
+        /* classification.style.color = this.theme.foreground; */
+        classification.style.color = "#FFFFFF"; /* Use white text for better contrast against the classification background color */
 
         cards.appendChild(classification);
 
@@ -616,7 +664,7 @@ export class Visual implements IVisual {
         const paddingLeft = 40;
         const paddingRight = 12;
         const paddingTop = 16;
-        const paddingBottom = 24;
+        const paddingBottom = 50;
 
         const plotWidth = width - paddingLeft - paddingRight;
         const plotHeight = height - paddingTop - paddingBottom;
@@ -659,7 +707,17 @@ export class Visual implements IVisual {
             renderSeries.stateSeries[0].time,
             renderSeries.stateSeries[
                 renderSeries.stateSeries.length - 1
-            ].time
+            ].time,
+            renderSeries.stateSeries.length
+        );
+        this.drawClassificationStrip(
+            svg,
+            renderSeries.classificationSeries,
+            xScale,
+            height - paddingBottom + 2,
+            5,
+            paddingLeft,
+            width - paddingRight
         );
 
         this.drawLine(
@@ -752,7 +810,8 @@ export class Visual implements IVisual {
         paddingTop: number,
         paddingBottom: number,
         firstDate: Date,
-        lastDate: Date
+        lastDate: Date,
+        observationCount: number
     ): void {
         const xAxis = document.createElementNS(
             "http://www.w3.org/2000/svg",
@@ -770,8 +829,13 @@ export class Visual implements IVisual {
         );
 
         startLabel.setAttribute(
+            "text-anchor",
+            "start"
+        );
+
+        startLabel.setAttribute(
             "y",
-            String(height - paddingBottom + 18)
+            String(height - paddingBottom + 22)
         );
 
         startLabel.setAttribute(
@@ -783,17 +847,6 @@ export class Visual implements IVisual {
             "font-size",
             "10"
         );
-
-        startLabel.textContent =
-            firstDate.toLocaleDateString(
-                undefined,
-                {
-                    day: "2-digit",
-                    month: "short"
-                }
-            );
-
-        svg.appendChild(startLabel);
 
         const endLabel = document.createElementNS(
             "http://www.w3.org/2000/svg",
@@ -802,12 +855,17 @@ export class Visual implements IVisual {
 
         endLabel.setAttribute(
             "x",
-            String(width - paddingRight - 55)
+            String(width - paddingRight)
+        );
+
+        endLabel.setAttribute(
+            "text-anchor",
+            "end"
         );
 
         endLabel.setAttribute(
             "y",
-            String(height - paddingBottom + 18)
+            String(height - paddingBottom + 28)
         );
 
         endLabel.setAttribute(
@@ -820,15 +878,35 @@ export class Visual implements IVisual {
             "10"
         );
 
-        endLabel.textContent =
-            lastDate.toLocaleDateString(
-                undefined,
-                {
-                    day: "2-digit",
-                    month: "short"
-                }
-            );
+        if (this.getUseWindowTypeDays()) {
 
+            startLabel.textContent =
+                firstDate.toLocaleDateString(
+                    undefined,
+                    {
+                        day: "2-digit",
+                        month: "short"
+                    }
+                );
+
+            endLabel.textContent =
+                lastDate.toLocaleDateString(
+                    undefined,
+                    {
+                        day: "2-digit",
+                        month: "short"
+                    }
+                );
+
+        } else {
+
+            startLabel.textContent = "Obs 1";
+
+            endLabel.textContent =
+                "Obs " + observationCount.toString();
+        }
+
+        svg.appendChild(startLabel);
         svg.appendChild(endLabel);
 
         xAxis.setAttribute("x1", String(paddingLeft));
@@ -955,7 +1033,8 @@ export class Visual implements IVisual {
         width: number
     ): void {
         this.drawLegendItem(svg, width - 220, 12, this.getStateColour(), "State");
-        this.drawLegendItem(svg, width - 165, 12, this.getBaselineColour(), "Baseline");
+        this.drawLegendItem(svg, width - 165, 12, this.getBaselineColour(), this.getUseTarget() ? "Reference" : "Baseline",
+);
         this.drawLegendItem(svg, width - 92, 12, this.getSigma1Colour(), "±1σ");
         this.drawLegendItem(svg, width - 52, 12, this.getSigma2Colour(), "±2σ");
     }
@@ -1098,7 +1177,7 @@ export class Visual implements IVisual {
     switch (metricName) {
 
             case "State":
-                return "Current value of the KPI at the most recent timestamp.";
+                return "Current value of the KPI at the most recent timestamp or observation.";
 
             case "Baseline":
                 return "Expected value based on the Baseline Window average.";
@@ -1121,6 +1200,57 @@ export class Visual implements IVisual {
 
             default:
                 return metricName;
+        }
+    }
+
+    private drawClassificationStrip(
+    svg: SVGSVGElement,
+    series: ClassificationPoint[],
+    xScale: (time: Date) => number,
+    y: number,
+    height: number,
+    minX: number,
+    maxX: number
+    ): void {
+
+        if (series.length === 0) {
+            return;
+        }
+
+        for (let i = 0; i < series.length; i++) {
+
+            const current = series[i];
+
+            const x1 =
+                i === 0
+                    ? minX
+                    : xScale(current.time);
+
+            const x2 =
+                i < series.length - 1
+                    ? xScale(series[i + 1].time)
+                    : maxX;
+
+            const rectWidth =
+                Math.max(1, x2 - x1);
+
+            const rect = document.createElementNS(
+                "http://www.w3.org/2000/svg",
+                "rect"
+            );
+
+            rect.setAttribute("x", String(x1));
+            rect.setAttribute("y", String(y));
+            rect.setAttribute("width", String(rectWidth));
+            rect.setAttribute("height", String(height));
+            rect.setAttribute(
+                "fill",
+                this.classificationColour(current.classification)
+            );
+
+            rect.style.pointerEvents = "none";
+
+            svg.appendChild(rect);
         }
     }
 }

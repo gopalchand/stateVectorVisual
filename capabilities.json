@@ -2,7 +2,7 @@
 "privileges": [],
 "dataRoles": [
 {
-    "displayName": "Timestamp",
+    "displayName": "Time / Observation",
     "name": "timestamp",
     "kind": "Grouping"
 },
