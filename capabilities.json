@@ -1,0 +1,46 @@
+{
+"privileges": [],
+"dataRoles": [
+{
+    "displayName": "Timestamp",
+    "name": "timestamp",
+    "kind": "Grouping"
+},
+{
+    "displayName": "Value",
+    "name": "value",
+    "kind": "Measure"
+}
+],
+"dataViewMappings": [
+{
+    "conditions": [
+    {
+        "timestamp": {
+        "max": 1
+        },
+        "value": {
+        "max": 1
+        }
+    }
+    ],
+    "categorical": {
+    "categories": {
+        "for": {
+        "in": "timestamp"
+        }
+    },
+    "values": {
+        "select": [
+        {
+            "bind": {
+            "to": "value"
+            }
+        }
+        ]
+    }
+    }
+}
+],
+"objects": {}
+}
